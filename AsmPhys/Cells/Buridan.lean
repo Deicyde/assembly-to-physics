@@ -82,19 +82,19 @@ theorem FFContract.validOut_of_capture {S : Params} (hS : S.Consistent) {N : Net
 theorem buridan {S : Params} (hS : S.Consistent)                      -- THM (norm_num)
     {N : Netlist n m} {jD clk gnd vdd : Fin m} {q : Fin n}
     {Hold : (ℝ → ℝ) → Bool → ℝ → Set (Fin n → ℝ)}
-    (hff : FFContract S N (.bdry jD) clk q gnd vdd Hold)              -- H_cells (MODEL in v0)
+    (hff : FFContract S N (.bdry jD) clk q gnd vdd Hold)              -- MODEL (H_cells)
     {Cmin Cmax : Fin n → ℝ}
     (hreg : ∀ i, Regular (N.fet i).I)                   -- MODEL (C2)
     (hcap : ∀ k, NodeCap (Cmin k) (Cmax k) (N.C k))                   -- MEAS range, MODEL law
-    (hD : jD ≠ clk ∧ jD ≠ gnd ∧ jD ≠ vdd)
+    (hD : jD ≠ clk ∧ jD ≠ gnd ∧ jD ≠ vdd)                             -- THM (pin check)
     {VDD : ℝ} (hVDD : VDD ∈ Icc S.VDDmin S.VDDmax)                    -- ENV
     {u₀ : ℝ → Fin m → ℝ} (hu₀ : Continuous u₀)                       -- ENV
     (hgnd : ∀ t, u₀ t gnd = 0) (hvdd : ∀ t, u₀ t vdd = VDD)           -- ENV
     {tg tr : ℕ → ℝ} (hedges : EdgesOK S tg tr)                        -- ENV
     (hclk : ClockOK S VDD (fun t => u₀ t clk) tr)                     -- ENV
-    {ρ : ℝ → ℝ} {tρ : ℝ} (hρ : Continuous ρ) (hρ0 : ∀ x ≤ 0, ρ x = 0)
-    (hρ1 : ∀ x, tρ ≤ x → ρ x = VDD) (hρr : ∀ x, ρ x ∈ Icc 0 VDD)
-    {k : ℕ} (hfit : tr k + S.tcqmax + tρ ≤ tr (k + 1) - S.tsu)
+    {ρ : ℝ → ℝ} {tρ : ℝ} (hρ : Continuous ρ) (hρ0 : ∀ x ≤ 0, ρ x = 0)  -- ENV (data input)
+    (hρ1 : ∀ x, tρ ≤ x → ρ x = VDD) (hρr : ∀ x, ρ x ∈ Icc 0 VDD)     -- ENV (data input)
+    {k : ℕ} (hfit : tr k + S.tcqmax + tρ ≤ tr (k + 1) - S.tsu)       -- ENV (data input)
     {d₀ : Bool} {e₀ : Fin n → ℝ}
     (h0 : e₀ ∈ Hold (fun t => u₀ t clk) d₀ (tr k + S.tcqmax))
     {tobs : ℝ} (hobs : tobs ∈ Icc (tr (k + 1) + S.tcqmax) (tr (k + 2) + S.tcqmin)) :

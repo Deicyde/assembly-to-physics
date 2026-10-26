@@ -1,0 +1,16 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+      - name: Layer discipline (Spec and Design are definitions only)
+        run: python3 scripts/check_layers.py
+      - name: Claims audit (statements use only Spec and Design; standard axioms)
+        run: lake env lean scripts/Audit.lean

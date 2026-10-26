@@ -1,3 +1,4 @@
+import AsmPhys.Spec.Cells
 import AsmPhys.Cells.Levels
 import AsmPhys.Circuit.Rails
 
@@ -20,37 +21,6 @@ namespace AsmPhys
 open Set
 
 variable {n m : ℕ}
-
-/-- A static CMOS inverter instance: input node `inp`, output state node `out`, ground and supply
-boundary nodes `gnd` and `vdd`, an n-FET `iN` with drain at `out` and source at `gnd`, a p-FET `iP`
-with drain at `out` and source at `vdd`, and no other channel terminal at `out`. -/
-structure Netlist.IsInverter (N : Netlist n m) (inp : Node n m) (out : Fin n) (gnd vdd : Fin m)
-    (iN iP : Fin N.nf) : Prop where
-  ne : iN ≠ iP
-  pol_n : (N.fet iN).pol = .n
-  pol_p : (N.fet iP).pol = .p
-  gate_n : (N.fet iN).g = inp
-  gate_p : (N.fet iP).g = inp
-  drain_n : (N.fet iN).d = .state out
-  source_n : (N.fet iN).s = .bdry gnd
-  drain_p : (N.fet iP).d = .state out
-  source_p : (N.fet iP).s = .bdry vdd
-  only : ∀ i, i ≠ iN → i ≠ iP → (N.fet i).d ≠ .state out ∧ (N.fet i).s ≠ .state out
-
-namespace Params
-
-/-- Propagation delay of an inverter whose output capacitance is at most `Cmax`:
-`t_pd(INV) = C_out^max · max(V_OH / I_rise, (V_DD^max − V_OL) / I_fall)`. -/
-noncomputable def tpdINV (S : Params) (Cmax : ℝ) : ℝ :=
-  Cmax * max (S.VOH / S.Irise) ((S.VDDmax - S.VOL) / S.Ifall)
-
-/-- Contamination delay of an inverter whose output capacitance is at least `Cmin`:
-`t_cd = min(NM_L, NM_H) · C_out^min / (n_out · I_max)` with `n_out = 2` channels at the output and
-`I_max` the larger of the two polarities' current bounds. -/
-noncomputable def tcdINV (S : Params) (Cmin : ℝ) : ℝ :=
-  min S.NML S.NMH * Cmin / (2 * max S.pn.Imax S.pp.Imax)
-
-end Params
 
 namespace Netlist.IsInverter
 

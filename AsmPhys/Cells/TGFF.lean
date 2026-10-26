@@ -1,95 +1,18 @@
+import AsmPhys.Design.TGFF
 import AsmPhys.Cells.TGLatch
 import AsmPhys.Cells.FlipFlop
 
 /-!
-# TGMS26: a transmission-gate master–slave flip-flop
+# TGMS26: structure and FF1
 
-The flip-flop of docs/SPIKE-FLIPFLOP.md: 26 transistors, 11 state nodes, boundary nodes ground,
-supply, clock and data. The clock drives an internal inverter `CKB`. The master latch stores at `X`
-(input gate TG1 from `A1 = ¬D`, feedback gate TG2 from `A2 = ¬Y`, forward inverter `Y = ¬X`); a
-two-inverter delay `B1, B2` feeds the slave input core `B`; the slave latch stores at `Z` (input gate
-TG3 from `B`, feedback gate TG4 from `A4 = ¬Q`, forward inverter `Q = ¬Z`). The master is
-transparent while the clock is low, the slave while it is high. The clock and the data pin drive
-gates only.
-
-The hold tube is time-independent: the rails, `CKB` high, and the slave holding its bit. FF1 holds
-because in the low phase the slave's input gate TG3 is off and its loop is invariant.
+The flip-flop, its hold tube and its timing conditions are defined in `AsmPhys.Design.TGFF`. Its
+structural facts are read off the transistor table. FF1 holds because in the low phase the slave's
+input gate TG3 is off and its loop is invariant.
 -/
 
 namespace AsmPhys
 
 open Set
-
-namespace TGFF
-
-/-- Ground pin. -/
-def gnd : Fin 4 := 0
-/-- Supply pin. -/
-def vdd : Fin 4 := 1
-/-- Clock pin. -/
-def clk : Fin 4 := 2
-/-- Data pin. -/
-def d : Fin 4 := 3
-
-/-- Inverted clock. -/
-def CKB : Fin 11 := 0
-/-- Master input core (`¬D`). -/
-def A1 : Fin 11 := 1
-/-- Master storage node. -/
-def X : Fin 11 := 2
-/-- Master forward inverter output. -/
-def Y : Fin 11 := 3
-/-- Master feedback core. -/
-def A2 : Fin 11 := 4
-/-- First delay stage. -/
-def B1 : Fin 11 := 5
-/-- Second delay stage. -/
-def B2 : Fin 11 := 6
-/-- Slave input core. -/
-def B : Fin 11 := 7
-/-- Slave storage node. -/
-def Z : Fin 11 := 8
-/-- Output. -/
-def Q : Fin 11 := 9
-/-- Slave feedback core. -/
-def A4 : Fin 11 := 10
-
-/-- Polarity of each transistor. -/
-def pol : Fin 26 → Polarity :=
-  ![.n, .p, .n, .p, .n, .p, .n, .p, .n, .p, .n, .p, .n, .p, .n, .p, .n, .p, .n, .p, .n, .p, .n, .p,
-    .n, .p]
-
-/-- Gate of each transistor. -/
-def gate : Fin 26 → Node 11 4 :=
-  ![.bdry clk, .bdry clk, .bdry d, .bdry d, .state CKB, .bdry clk, .state X, .state X, .state Y,
-    .state Y, .bdry clk, .state CKB, .state Y, .state Y, .state B1, .state B1, .state B2,
-    .state B2, .bdry clk, .state CKB, .state Z, .state Z, .state Q, .state Q, .state CKB,
-    .bdry clk]
-
-/-- Drain of each transistor. -/
-def drain : Fin 26 → Node 11 4 :=
-  ![.state CKB, .state CKB, .state A1, .state A1, .state A1, .state A1, .state Y, .state Y,
-    .state A2, .state A2, .state A2, .state A2, .state B1, .state B1, .state B2, .state B2,
-    .state B, .state B, .state B, .state B, .state Q, .state Q, .state A4, .state A4, .state A4,
-    .state A4]
-
-/-- Source of each transistor. -/
-def source : Fin 26 → Node 11 4 :=
-  ![.bdry gnd, .bdry vdd, .bdry gnd, .bdry vdd, .state X, .state X, .bdry gnd, .bdry vdd,
-    .bdry gnd, .bdry vdd, .state X, .state X, .bdry gnd, .bdry vdd, .bdry gnd, .bdry vdd,
-    .bdry gnd, .bdry vdd, .state Z, .state Z, .bdry gnd, .bdry vdd, .bdry gnd, .bdry vdd,
-    .state Z, .state Z]
-
-end TGFF
-
-/-- The flip-flop netlist, with device functions `dev`, capacitance laws `C`, and each transistor
-carrying the sheet's parameters for its polarity. -/
-noncomputable def tgff (S : Params) (dev : Fin 26 → ℝ → ℝ → ℝ → ℝ) (C : Fin 11 → ℝ → ℝ)
-    (hC : ∀ k v, 0 < C k v) : Netlist 11 4 where
-  nf := 26
-  fet i := ⟨TGFF.pol i, S.par (TGFF.pol i), dev i, TGFF.gate i, TGFF.drain i, TGFF.source i⟩
-  C := C
-  C_pos := hC
 
 section Structure
 
@@ -204,11 +127,6 @@ theorem tgff_contractOn (hdev : ∀ i, FETContract (TGFF.pol i) (S.par (TGFF.pol
   fun i _ => hdev i
 
 end Structure
-
-/-- The flip-flop's hold tube: every node on the rail `[0, V_DD^max]`, `CKB` high, and the slave
-holding `b` at `Q`. It depends neither on the clock waveform nor on time. -/
-def tgffHold (S : Params) : (ℝ → ℝ) → Bool → ℝ → Set (Fin 11 → ℝ) := fun _ b _ =>
-  {e | (∀ k, e k ∈ Icc 0 S.VDDmax) ∧ S.VOH ≤ e TGFF.CKB ∧ latchHold S b TGFF.Z TGFF.Q TGFF.A4 e}
 
 /-- **FF1 for TGMS26**, without leakage: the `ff1` field of `FFContract` for every device family
 meeting the contracts and every capacitance law in range, when `t_cq^max` reaches past the fall

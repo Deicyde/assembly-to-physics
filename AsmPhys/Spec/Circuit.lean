@@ -1,9 +1,13 @@
-import AsmPhys.Device.Contract
+import AsmPhys.Spec.Device
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Mathlib.Data.Matrix.Mul
 
 /-!
 # L2 — Circuit model
+
+Part of the trusted specification: definitions only, importing only Mathlib and
+`AsmPhys.Spec`. See README.md for how the layers fit together.
 
 The chip is modelled as a nodal ODE: one state per non-boundary node, grounded nonlinear
 capacitance, and channel currents from the device functions (spec, "L2"):
@@ -15,7 +19,7 @@ one clock pin per flip-flop, primary inputs). Trajectories live on an interval `
 the ODE as a right derivative on `[a, b)`.
 
 Transistors are indexed by `Fin N.nf` rather than listed, so that sums over them are `Finset`
-sums.
+sums. The incidence matrix of a directed multigraph (THM L2.1) is defined at the end.
 -/
 
 namespace AsmPhys
@@ -65,12 +69,6 @@ def pot (u : Fin m → ℝ) (e : Fin n → ℝ) : Node n m → ℝ
   | .state k => e k
   | .bdry j => u j
 
-@[simp] lemma pot_state (u : Fin m → ℝ) (e : Fin n → ℝ) (k : Fin n) :
-    pot u e (.state k) = e k := rfl
-
-@[simp] lemma pot_bdry (u : Fin m → ℝ) (e : Fin n → ℝ) (j : Fin m) :
-    pot u e (.bdry j) = u j := rfl
-
 /-- Channel current of a transistor, drain to source, at node potentials `(u, e)`. -/
 def FET.current (f : FET n m) (u : Fin m → ℝ) (e : Fin n → ℝ) : ℝ :=
   f.I (pot u e f.g) (pot u e f.d) (pot u e f.s)
@@ -111,6 +109,11 @@ def nChan (k : Fin n) : ℕ :=
     (Finset.univ.filter fun i => (N.fet i).s = .state k).card
 
 end Netlist
+
+/-- Incidence matrix of a directed multigraph whose branch `β` runs from `tail β` to `head β`:
+`A k β = +1` if `k = tail β`, `−1` if `k = head β`, and `0` otherwise (so `0` on a self-loop). -/
+def incidence {V Br : Type*} [DecidableEq V] (tail head : Br → V) : Matrix V Br ℝ :=
+  Matrix.of fun k β => (if k = tail β then 1 else 0) - (if k = head β then 1 else 0)
 
 end
 

@@ -1,4 +1,4 @@
-import AsmPhys.Circuit.Netlist
+import AsmPhys.Circuit.Basic
 import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Analysis.Calculus.Deriv.Prod
 

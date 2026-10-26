@@ -1,30 +1,20 @@
-import AsmPhys.Params
+import AsmPhys.Spec.Levels
+import AsmPhys.Design.Latch
+import AsmPhys.Spec.Params
 
 /-!
-# L3 — Logic levels
+# Logic and latch levels
 
-Logic levels are voltage intervals: `validIn b v` is the input reading of `v` as `b`, and
-`validOut b v` the stronger output level. K0 makes the output levels strictly inside the input
-levels, with noise margins `NM_L` and `NM_H`.
+K0 makes the output levels strictly inside the input levels, with noise margins `NM_L` and `NM_H`.
+The latch levels `θ_L` and `θ_H` (`AsmPhys.Design.Latch`) sit inside the logic levels with margin
+`δ₀` on every side.
 -/
 
 namespace AsmPhys
 
 namespace Params
 
-variable (S : Params)
-
-/-- `v` reads as the bit `b` at an input: `v ≤ V_IL` for `0`, `v ≥ V_IH` for `1`. -/
-def validIn : Bool → ℝ → Prop
-  | false, v => v ≤ S.VIL
-  | true, v => S.VIH ≤ v
-
-/-- `v` is a valid output level for the bit `b`: `v ≤ V_OL` for `0`, `v ≥ V_OH` for `1`. -/
-def validOut : Bool → ℝ → Prop
-  | false, v => v ≤ S.VOL
-  | true, v => S.VOH ≤ v
-
-variable {S}
+variable {S : Params}
 
 /-- A valid output level is a valid input level (K0). -/
 theorem Consistent.validIn_of_validOut (hS : S.Consistent) {b : Bool} {v : ℝ}
@@ -43,19 +33,8 @@ theorem Consistent.not_validIn_both (hS : S.Consistent) {v : ℝ} :
 
 variable (S)
 
-/-- Mid-band low level `θ_L = (V_OL + V_IL)/2`, the bound of a node holding `0` in a latch tube. -/
-noncomputable def θL : ℝ := (S.VOL + S.VIL) / 2
-
-/-- Mid-band high level `θ_H = (V_IH + V_OH)/2`, the bound of a node holding `1` in a latch tube. -/
-noncomputable def θH : ℝ := (S.VIH + S.VOH) / 2
-
 /-- Band width `δ₀ = min(NM_L, NM_H)/2`, the margin between the latch levels and the logic levels. -/
 noncomputable def δ₀ : ℝ := min S.NML S.NMH / 2
-
-/-- Latch level: `v ≤ θ_L` for `0`, `v ≥ θ_H` for `1`. -/
-def Lvl : Bool → ℝ → Prop
-  | false, v => v ≤ S.θL
-  | true, v => S.θH ≤ v
 
 variable {S}
 

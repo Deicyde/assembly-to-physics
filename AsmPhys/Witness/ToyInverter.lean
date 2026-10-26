@@ -9,36 +9,13 @@ One state node (the output), boundary nodes ground `0`, supply `1` and input `2`
 and p-FET, and unit output capacitance. With ground at `0`, supply at `1` and the input held at
 `0`, THM L2.2 gives a trajectory from `0`, every hypothesis of `IsInverter.propagation` holds,
 and the output is a valid `1` from `t_pd = 1 · max(0.9/0.1, 0.9/0.1) = 9` on.
+
+The toy objects are defined in `AsmPhys.Design.Toy`.
 -/
 
 namespace AsmPhys.Witness
 
-open Set
-
-/-- The toy n-FET: gate at the input, drain at the output, source at ground. -/
-noncomputable def invN : FET 1 3 where
-  pol := .n
-  P := fetParams
-  I := dev .n fetParams
-  g := .bdry 2
-  d := .state 0
-  s := .bdry 0
-
-/-- The toy p-FET: gate at the input, drain at the output, source at the supply. -/
-noncomputable def invP : FET 1 3 where
-  pol := .p
-  P := fetParams
-  I := dev .p fetParams
-  g := .bdry 2
-  d := .state 0
-  s := .bdry 1
-
-/-- The toy inverter netlist. -/
-noncomputable def inv : Netlist 1 3 where
-  nf := 2
-  fet := ![invN, invP]
-  C := fun _ _ => 1
-  C_pos := fun _ _ => one_pos
+open AsmPhys.Toy Set
 
 theorem inv_isInverter : inv.IsInverter (.bdry 2) 0 0 1 (0 : Fin 2) (1 : Fin 2) where
   ne := by change (0 : Fin 2) ≠ 1; decide
@@ -86,7 +63,7 @@ end AsmPhys.Witness
 
 namespace AsmPhys.Witness
 
-open Set
+open AsmPhys.Toy Set
 
 /-- Non-vacuity of THM L3.1 for INV, hypothesis by hypothesis: the toy sheet, inverter, devices,
 capacitance, supply, and a trajectory from `0` with the input held low meet every hypothesis of

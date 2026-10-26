@@ -1,3 +1,4 @@
+import AsmPhys.Design.Latch
 import AsmPhys.Cells.TransGate
 import AsmPhys.Circuit.Tube
 
@@ -40,11 +41,6 @@ structure Netlist.IsTGLatch (N : Netlist n m) (gnd vdd : Fin m) (i₁ : Node n m
 output `b`. -/
 def latchAgree (S : Params) (b : Bool) {n : ℕ} (x y a₁ a₂ : Fin n) (e : Fin n → ℝ) : Prop :=
   S.Lvl (!b) (e a₁) ∧ S.Lvl (!b) (e x) ∧ S.Lvl (!b) (e a₂) ∧ S.validOut b (e y)
-
-/-- The latch holds `b` at `y`: `x` and `a₂` at the latch level of `¬b`, and `y` a valid output
-`b`. -/
-def latchHold (S : Params) (b : Bool) {n : ℕ} (x y a₂ : Fin n) (e : Fin n → ℝ) : Prop :=
-  S.Lvl (!b) (e x) ∧ S.Lvl (!b) (e a₂) ∧ S.validOut b (e y)
 
 namespace Netlist.IsTGLatch
 

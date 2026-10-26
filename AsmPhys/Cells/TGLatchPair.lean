@@ -17,18 +17,6 @@ namespace AsmPhys
 
 open Set
 
-namespace Params
-
-/-- Settling time of a latch's (input core, storage node) pair with capacitances at most `CA` and
-`CX`, without leakage: the larger of the pull-down and pull-up bounds. -/
-noncomputable def PhiTG (S : Params) (CA CX : ℝ) : ℝ :=
-  max ((CA + CX) * S.VDDmax / min (S.pn.Gon * S.VOL) S.pn.Isat
-        + CX * S.VDDmax / min (S.pn.Gon * (S.NML / 2)) S.pn.Isat)
-      ((CA + CX) * S.VDDmax / min (S.pp.Gon * (S.VDDmin - S.VOH)) S.pp.Isat
-        + CX * S.VDDmax / min (S.pp.Gon * (S.NMH / 2)) S.pp.Isat)
-
-end Params
-
 /-- A clipped right derivative of a minimum is at least `min d 0`. -/
 private theorem min_le_clip {f g d : ℝ} :
     min d 0 ≤ if f < g then d else if g < f then 0 else min d 0 := by

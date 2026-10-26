@@ -13,21 +13,16 @@ flip-flop contract with a time-independent, nonempty hold tube that every state 
 by a capture. Its hypotheses together with a continuous ClockOK clock and a rising `D` meet every
 hypothesis of THM L3.3, which therefore holds non-vacuously: some start time of the rise leaves `Q`
 at `(V_IL + V_IH)/2` one cycle later.
+
+The toy objects are defined in `AsmPhys.Design.Toy`.
 -/
 
 namespace AsmPhys.Witness
 
-open Set
-
-/-- Toy node capacitances, indexed as `TGFF`'s state nodes. -/
-noncomputable def toyC : Fin 11 → ℝ := ![0.01, 0.1, 0.1, 0.1, 0.1, 52, 52, 0.1, 0.1, 0.1, 0.1]
+open AsmPhys.Toy Set
 
 theorem toyC_pos (k : Fin 11) : 0 < toyC k := by
   fin_cases k <;> norm_num [toyC]
-
-/-- The toy flip-flop: TGMS26 with the toy clamp devices and the toy capacitances. -/
-noncomputable def toyFF : Netlist 11 4 :=
-  tgff sheet (fun i => dev (TGFF.pol i) fetParams) (fun k _ => toyC k) (fun k _ => toyC_pos k)
 
 theorem sheet_par (pol : Polarity) : sheet.par pol = fetParams := by
   cases pol <;> rfl
@@ -77,12 +72,6 @@ theorem toy_tgff_contract :
   tgff_contract sheet_consistent ⟨rfl, rfl⟩ toy_hdev (fun k => nodeCap_const (toyC_pos k))
     toy_timing
 
-/-- A state in the hold tube of `b`: `CKB` and `Q` at `V_OH` for `b = 1`; `CKB`, `Z` and `A4` at
-`V_OH` for `b = 0`; every other node at `0`. -/
-noncomputable def toyHoldState : Bool → Fin 11 → ℝ
-  | true => ![0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0.9, 0]
-  | false => ![0.9, 0, 0, 0, 0, 0, 0, 0, 0.9, 0, 0.9]
-
 theorem toyHoldState_mem (clk : ℝ → ℝ) (b : Bool) (t : ℝ) :
     toyHoldState b ∈ tgffHold sheet clk b t := by
   cases b <;> refine ⟨fun k => ?_, ?_, ?_⟩
@@ -95,9 +84,6 @@ theorem toyHoldState_mem (clk : ℝ → ℝ) (b : Bool) (t : ℝ) :
 theorem toy_tgffHold_nonempty (clk : ℝ → ℝ) (b : Bool) (t : ℝ) :
     (tgffHold sheet clk b t).Nonempty :=
   ⟨toyHoldState b, toyHoldState_mem clk b t⟩
-
-/-- The toy boundary waveform: ground `0`, supply `1`, clock `clk`, data `v`. -/
-noncomputable def toyU (clk : ℝ → ℝ) (v : ℝ) (t : ℝ) : Fin 4 → ℝ := ![0, 1, clk t, v]
 
 section ToyU
 

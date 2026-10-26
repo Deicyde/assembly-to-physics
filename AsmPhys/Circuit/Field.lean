@@ -1,4 +1,4 @@
-import AsmPhys.Circuit.Netlist
+import AsmPhys.Circuit.Basic
 import Mathlib.Analysis.Normed.Group.Constructions
 import Mathlib.Topology.MetricSpace.Lipschitz
 import Mathlib.Algebra.Order.BigOperators.Group.Finset

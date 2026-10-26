@@ -1,5 +1,5 @@
 import AsmPhys.Circuit.Rails
-import AsmPhys.Params
+import AsmPhys.Spec.Params
 
 /-!
 # Local currents

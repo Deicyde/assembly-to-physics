@@ -20,18 +20,6 @@ namespace Netlist.IsInverter
 
 variable {N : Netlist n m} {inp : Node n m} {out : Fin n} {gnd vdd : Fin m} {iN iP : Fin N.nf}
 
-/-- The inverter instance as a cell: one input `inp`, output `out`, function `¬x`, and the
-inverter's propagation and contamination delays for output capacitance in `[Cmin, Cmax]`. -/
-noncomputable def cell (_hinv : N.IsInverter inp out gnd vdd iN iP) (S : Params)
-    (Cmin Cmax : ℝ) : Cell n m where
-  ar := 1
-  ar_pos := one_pos
-  f := fun x => !x 0
-  ins := fun _ => inp
-  out := out
-  tpd := S.tpdINV Cmax
-  tcd := S.tcdINV Cmin
-
 /-- `t_pd(INV) ≥ 0` under K0–K14. -/
 theorem _root_.AsmPhys.Params.Consistent.tpdINV_nonneg {S : Params} (hS : S.Consistent)
     {Cmax : ℝ} (hC : 0 ≤ Cmax) : 0 ≤ S.tpdINV Cmax := by

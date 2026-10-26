@@ -1,7 +1,10 @@
-import AsmPhys.Device.Contract
+import AsmPhys.Spec.Device
 
 /-!
-# Parameter sheet and consistency conditions K0–K12
+# Parameter sheet and consistency conditions K0–K14
+
+Part of the trusted specification: definitions only, importing only Mathlib and
+`AsmPhys.Spec`. See README.md for how the layers fit together.
 
 Every number the theorems depend on lives here with its tag (spec, "Parameter sheet and
 consistency conditions"). Per-node capacitance ranges live in `NodeCap`, per-cell delays with the
@@ -76,7 +79,7 @@ noncomputable def Irise : ℝ := min (S.pp.Gon * (S.VDDmin - S.VOH)) S.pp.Isat -
 /-- Guaranteed net pull-down current of an inverter whose output is above `V_OL` (K6). -/
 noncomputable def Ifall : ℝ := min (S.pn.Gon * S.VOL) S.pn.Isat - S.pp.Ioff
 
-/-- The consistency conditions K0–K13 (THM once the values are filled in, by `norm_num`).
+/-- The consistency conditions K0–K14 (THM once the values are filled in, by `norm_num`).
 K8 here is only its cell-independent part; the per-path setup and hold checks belong to L4.
 K13 and K14 are not in the spec. Without K13's first two clauses a sheet can satisfy K0–K12 while
 no device meets the FET contract (docs/FINDINGS.md, F3); with them every consistent sheet has

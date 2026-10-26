@@ -22,38 +22,6 @@ namespace AsmPhys
 
 open Set
 
-namespace Params
-
-/-- Settling time of the master latch: its (A1, X) pair, then `Y`, then `A2`. -/
-noncomputable def σm (S : Params) (Cmax : Fin 11 → ℝ) : ℝ :=
-  S.PhiTG (Cmax TGFF.A1) (Cmax TGFF.X) + S.tpdINV (Cmax TGFF.Y) + S.tpdINV (Cmax TGFF.A2)
-
-/-- Settling time of the slave latch: its (B, Z) pair, then `Q`, then `A4`. -/
-noncomputable def σs (S : Params) (Cmax : Fin 11 → ℝ) : ℝ :=
-  S.PhiTG (Cmax TGFF.B) (Cmax TGFF.Z) + S.tpdINV (Cmax TGFF.Q) + S.tpdINV (Cmax TGFF.A4)
-
-end Params
-
-/-- The flip-flop's timing conditions N1–N7 (MODEL: part of H_cells' timing; N5 also constrains the
-capacitance design). -/
-structure TGFFTiming (S : Params) (Cmin Cmax : Fin 11 → ℝ) : Prop where
-  /-- N1: the hold time covers the rise and the clock inverter. -/
-  N1 : S.tslew + S.tpdINV (Cmax TGFF.CKB) ≤ S.th
-  /-- N2: the setup time covers the master's settling. -/
-  N2 : S.σm Cmax ≤ S.tsu
-  /-- N3: the master, the chain and the slave settle before the fall. -/
-  N3 : S.σm Cmax + S.tpdINV (Cmax TGFF.B1) + S.tpdINV (Cmax TGFF.B2) + S.σs Cmax ≤
-    S.tsu + S.tslew + S.thigh
-  /-- N4: the slave settles within the high phase. -/
-  N4 : S.tpdINV (Cmax TGFF.CKB) + S.σs Cmax ≤ S.thigh
-  /-- N5 (race): the chain's contamination outlasts the fall and the clock inverter. -/
-  N5 : S.tslew + S.tpdINV (Cmax TGFF.CKB) ≤
-    S.tcdINV (Cmin TGFF.Y) + S.tcdINV (Cmin TGFF.B1) + S.tcdINV (Cmin TGFF.B2)
-  /-- N6: `t_cq^max` reaches past the fall and the clock inverter. -/
-  N6 : 2 * S.tslew + S.thigh + S.tpdINV (Cmax TGFF.CKB) ≤ S.tcqmax
-  /-- N7: no minimum clock-to-Q delay is claimed. -/
-  N7 : S.tcqmin = 0
-
 /-- `t_pd(INV) ≥ 0` (K0, K5). -/
 private theorem tpdINV_nonneg_aux {S : Params} (hS : S.Consistent) {Cmax : ℝ} (hC : 0 ≤ Cmax) :
     0 ≤ S.tpdINV Cmax := by

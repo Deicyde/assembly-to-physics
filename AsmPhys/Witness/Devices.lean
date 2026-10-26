@@ -1,4 +1,5 @@
-import AsmPhys.Params
+import AsmPhys.Design.Toy
+import AsmPhys.Spec.Params
 import Mathlib.Order.Monotone.Union
 import Mathlib.Topology.MetricSpace.Lipschitz
 import Mathlib.Tactic.Linarith
@@ -12,26 +13,15 @@ For any parameters with `V_off < V_on`, `G_on, I_sat, I_off ≥ 0` and
   `I(g, d, s) = r(gate drive) · c(v_ds)`,
   `r(x) = clamp((x − V_off)/(V_on − V_off), 0, 1)`,  `c(x) = clamp(G_on·x, −I_sat, I_sat)`
 
-meets the FET contract C1–C6 of either polarity. It conducts nothing when off, so `I_off = 0`
-would do, and on the rails `|I| ≤ min(G_on·|v_ds|, I_sat)`. Every sheet satisfying K0–K13 meets
+(`AsmPhys.Toy.dev`, defined in `AsmPhys.Design.Toy`) meets the FET contract C1–C6 of either
+polarity. It conducts nothing when off, so `I_off = 0`
+would do, and on the rails `|I| ≤ min(G_on·|v_ds|, I_sat)`. Every sheet satisfying K0–K14 meets
 these conditions for both polarities, so the contracts of a consistent sheet are never vacuous.
 -/
 
 namespace AsmPhys.Witness
 
-open Set
-
-/-- Gate-drive ramp `r(x) = clamp((x − V_off)/(V_on − V_off), 0, 1)`. -/
-noncomputable def ramp (P : FETParams) (x : ℝ) : ℝ :=
-  max 0 (min 1 ((x - P.Voff) / (P.Von - P.Voff)))
-
-/-- Channel characteristic `c(x) = clamp(G_on·x, −I_sat, I_sat)`. -/
-noncomputable def chan (P : FETParams) (x : ℝ) : ℝ :=
-  max (-P.Isat) (min P.Isat (P.Gon * x))
-
-/-- The clamp device of polarity `pol`: `r(gate drive) · c(v_ds)`. -/
-noncomputable def dev (pol : Polarity) (P : FETParams) (g d s : ℝ) : ℝ :=
-  ramp P (gateDrive pol g d s) * chan P (d - s)
+open AsmPhys.Toy Set
 
 section Clamp
 
@@ -256,7 +246,7 @@ theorem dev_contract {pol : Polarity} {P : FETParams} {Vmax : ℝ} (hV : P.Voff 
     refine le_trans (min_le_min (mul_le_mul_of_nonneg_left ?_ hG) le_rfl) hmax
     exact abs_sub_le_iff.2 ⟨by linarith [hd.2, hs.1], by linarith [hd.1, hs.2]⟩
 
-/-- Every sheet satisfying K0–K13 has devices of both polarities meeting their contracts. -/
+/-- Every sheet satisfying K0–K14 has devices of both polarities meeting their contracts. -/
 theorem _root_.AsmPhys.Params.Consistent.exists_fetContract {S : Params} (hS : S.Consistent) :
     FETContract .n S.pn S.VDDmax (dev .n S.pn) ∧ FETContract .p S.pp S.VDDmax (dev .p S.pp) := by
   obtain ⟨hOL, -, -, -, hOH⟩ := hS.K0

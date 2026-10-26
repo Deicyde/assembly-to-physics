@@ -5,6 +5,9 @@ import Mathlib.Basic.Real.Basic
 /-!
 # L1 — Device contracts and node capacitance
 
+Part of the trusted specification: definitions only, importing only Mathlib and
+`AsmPhys.Spec`. See README.md for how the layers fit together.
+
 Devices and node capacitances enter the development only through contracts: inequalities whose
 clauses are tagged by what justifies them (spec, "L1"). Every theorem above L1 holds for every
 device function and capacitance law that satisfies them.

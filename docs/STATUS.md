@@ -1,9 +1,10 @@
 # Status
 
 Snapshot 2026-10-25. Lean v4.35.0, Mathlib tag v4.35.0. `lake build` is clean, the library
-contains no `sorry`, `admit`, `axiom`, `native_decide` or `bv_decide`, and every theorem below
-depends only on `propext`, `Classical.choice` and `Quot.sound` (`scratch/AxiomsAll.lean`, not
-committed, reproduces the audit).
+contains no `sorry`, `admit`, `axiom`, `native_decide` or `bv_decide`, and every claim depends only
+on `propext`, `Classical.choice` and `Quot.sound`. Every result is restated in
+`AsmPhys/Claims.lean` in terms of the trusted Spec and Design layers only; `scripts/check_layers.py`
+and `scripts/Audit.lean` check the layering and the axioms (README.md).
 
 `ClockOK` is the owner-adopted fix for FINDINGS F1 and F6 (2026-10-24); the spec's version is
 kept as `ClockOKSpec`. Under the spec's version the flip-flop contract forces empty hold sets.
@@ -27,25 +28,28 @@ clause and THM L3.3 non-vacuous. THM L4.1 still has no non-vacuity witness (FIND
 
 ## Spec theorem → Lean
 
+Definitions live in `Spec/` and `Design/`; each theorem's restatement in `Claims.lean` is listed in
+README.md.
+
 | Spec | Lean | File |
 | --- | --- | --- |
-| C1–C6, NodeCap | `Passive`, `Regular`, `BoundedOnRail`, `FETContract`, `NodeCap` | `Device/Contract.lean` |
+| C1–C6, NodeCap | `Passive`, `Regular`, `BoundedOnRail`, `FETContract`, `NodeCap` | `Spec/Device.lean` |
 | Derived `I(v_g, v, v) = 0` | `Passive.apply_self` | `Circuit/Rails.lean` |
-| Netlist, `F`, trajectories | `Node`, `FET`, `Netlist`, `pot`, `Netlist.F`, `Netlist.vf`, `Netlist.IsTrajOn` | `Circuit/Netlist.lean` |
+| Netlist, `F`, trajectories | `Node`, `FET`, `Netlist`, `pot`, `Netlist.F`, `Netlist.vf`, `Netlist.IsTrajOn` | `Spec/Circuit.lean` |
 | THM L2.1 | `tellegen`, `tellegen_matrix` | `Circuit/Tellegen.lean` |
 | THM L2.2 | `Netlist.exists_isTrajOn`, `Netlist.isTrajOn_unique` | `Circuit/WellPosed.lean` |
 | THM L2.3 | `Netlist.rail_invariance` (also `rail_invariance_set`, `rail_invariance_node`) | `Circuit/Rails.lean` |
 | THM L2.4 | `Netlist.exists_dist_le_gronwallBound`, `Netlist.exists_lipschitz_dependence` | `Circuit/WellPosed.lean` |
 | THM L2.5 | `Netlist.slew_bound`, `Netlist.slew_lipschitz`, pointwise `Netlist.abs_vf_le` | `Circuit/Rails.lean` |
-| Parameter sheet, K0–K14 | `Params`, `Params.Consistent` | `Params.lean` |
-| Logic levels | `Params.validIn`, `Params.validOut` | `Cells/Levels.lean` |
+| Parameter sheet, K0–K14 | `Params`, `Params.Consistent` | `Spec/Params.lean` |
+| Logic levels | `Params.validIn`, `Params.validOut` | `Spec/Levels.lean` |
 | THM L3.1 (INV) | `Netlist.IsInverter.propagation` | `Cells/Inverter.lean` |
 | THM L3.2 (INV) | `Netlist.IsInverter.contamination` | `Cells/Inverter.lean` |
 | INV as a composable cell | `Netlist.IsInverter.behaves` | `Cells/InverterCell.lean` |
-| Clock pins, flip-flop contract | `EdgesOK`, `ClockOK` (fixed), `ClockOKSpec` (spec), `FFRun`, `FFContract` | `Cells/FlipFlop.lean` |
+| Clock pins, flip-flop contract | `EdgesOK`, `ClockOK` (fixed), `ClockOKSpec` (spec), `FFRun`, `FFContract` | `Spec/FlipFlop.lean` |
 | THM L3.3 | `buridan` | `Cells/Buridan.lean` |
 | THM L3.4 | `CombDAG.timing` | `Cells/Compose.lean` |
-| U_ENV, Inv_L4, setup/hold | `SyncNet.UEnv`, `SyncNet.InvL4`, `SyncNet.SetupOK`, `SyncNet.HoldOK` | `Sync/Refinement.lean` |
+| U_ENV, Inv_L4, setup/hold | `SyncNet.UEnv`, `SyncNet.InvL4`, `SyncNet.SetupOK`, `SyncNet.HoldOK` | `Spec/Sync.lean` |
 | THM L4.1 | `SyncNet.refinement`, `SyncNet.refinement_out` | `Sync/Refinement.lean` |
 | THM End-to-end | `end_to_end` | `Shell/EndToEnd.lean` |
 
